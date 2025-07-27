@@ -111,6 +111,9 @@ getTeraboxLink(myTeraboxLink);
 ```
 
 # Developer Contact
+
 Name: Robin Shakya
+
 Email: dev.robinop@gmail.com
-Telegram: @ItS_Me_Shakya (Get in touch for the original script)
+
+Telegram: @ItS_Me_Shakya
