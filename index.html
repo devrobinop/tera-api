@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terabox API Example</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; background-color: #f8f9fa; color: #333; max-width: 800px; margin: 20px auto; padding: 20px; }
+        input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:disabled { background-color: #aaa; }
+        #results { margin-top: 20px; padding: 15px; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; display: none; }
+        #results h3 { margin-top: 0; }
+        #error { color: #dc3545; }
+        a { color: #007bff; }
+    </style>
+</head>
+<body>
+
+    <h1>Terabox API Usage Example</h1>
+    <p>Enter a Terabox URL to fetch the download and streaming links.</p>
+
+    <input type="url" id="teraboxUrlInput" placeholder="https://1024terabox.com/s/1...">
+    <button id="fetchButton">Fetch Links</button>
+
+    <div id="results">
+        <h3>File Details:</h3>
+        <p><strong>Filename:</strong> <span id="fileName"></span></p>
+        <p><strong>Size:</strong> <span id="fileSize"></span></p>
+        <p><strong>Uploader:</strong> <span id="uploader"></span></p>
+        <p><strong>Download:</strong> <a id="downloadLink" href="#" target="_blank">Download Link</a></p>
+        <p><strong>Stream:</strong> <a id="streamLink" href="#" target="_blank">Stream Link</a></p>
+    </div>
+
+    <p id="error"></p>
+    <p id="loading" style="display: none;">Loading...</p>
+
+    <script>
+        const teraboxUrlInput = document.getElementById('teraboxUrlInput');
+        const fetchButton = document.getElementById('fetchButton');
+        const resultsDiv = document.getElementById('results');
+        const errorP = document.getElementById('error');
+        const loadingP = document.getElementById('loading');
+
+        fetchButton.addEventListener('click', async () => {
+            const teraboxUrl = teraboxUrlInput.value.trim();
+            if (!teraboxUrl) {
+                errorP.textContent = 'Please enter a URL.';
+                return;
+            }
+
+            // Reset UI
+            fetchButton.disabled = true;
+            loadingP.style.display = 'block';
+            resultsDiv.style.display = 'none';
+            errorP.textContent = '';
+
+            try {
+                // Construct the API URL
+                const apiUrl = `https://terabox-worker.robinkumarshakya103.workers.dev/api?url=${encodeURIComponent(teraboxUrl)}`;
+                
+                // Call the API
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'An unknown error occurred.');
+                }
+
+                if (data.files && data.files.length > 0) {
+                    const file = data.files[0];
+                    
+                    // Populate the results
+                    document.getElementById('fileName').textContent = file.file_name;
+                    document.getElementById('fileSize').textContent = file.size;
+                    document.getElementById('uploader').textContent = file.uploader_name;
+                    document.getElementById('downloadLink').href = file.download_url;
+                    document.getElementById('streamLink').href = file.streaming_url;
+
+                    // Show the results
+                    resultsDiv.style.display = 'block';
+                } else {
+                    throw new Error("No files found in the API response.");
+                }
+
+            } catch (err) {
+                errorP.textContent = `Error: ${err.message}`;
+            } finally {
+                // Re-enable the button and hide loading
+                fetchButton.disabled = false;
+                loadingP.style.display = 'none';
+            }
+        });
+    </script>
+
+</body>
+</html>
